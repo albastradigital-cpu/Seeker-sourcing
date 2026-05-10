@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Seeker · Influencer Sourcing</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Bebas+Neue&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #050507;
+  --surface: #0d0d12;
+  --border: #1a1a24;
+  --border2: #252535;
+  --accent: #00ff88;
+  --accent-dim: rgba(0,255,136,0.08);
+  --accent-dim2: rgba(0,255,136,0.15);
+  --warn: #ff6b35;
+  --blue: #4d9fff;
+  --pink: #ff4d88;
+  --yellow: #ffd93d;
+  --text: #e0e0ee;
+  --muted: #4a4a6a;
+  --muted2: #6a6a8a;
+  --mono: 'Space Mono', monospace;
+  --display: 'Bebas Neue', sans-serif;
+  --body: 'Inter', sans-serif;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--body);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Scanline overlay */
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.03) 2px,
+    rgba(0,0,0,0.03) 4px
+  );
+  pointer-events: none; z-index: 9999;
+}
+
+/* Grid bg */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    linear-gradient(rgba(0,255,136,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,255,136,0.025) 1px, transparent 1px);
+  background-size: 32px 32px;
+  pointer-events: none; z-index: 0;
+}
+
+.container {
+  position: relative; z-index: 1;
+  max-width: 1100px; margin: 0 auto;
+  padding: 32px 24px;
+}
+
+/* ── Header ── */
+.header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  margin-bottom: 32px; padding-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+}
+.header-left { display: flex; align-items: center; gap: 16px; }
+.logo {
+  font-family: var(--display);
+  font-size: 48px; line-height: 1;
+  color: var(--accent);
+  text-shadow: 0 0 30px rgba(0,255,136,0.4);
+  letter-spacing: 2px;
+}
+.header-meta { display: flex; flex-direction: column; gap: 4px; }
+.header-sub {
+  font-family: var(--mono);
+  font-size: 10px; color: var(--muted2);
+  text-transform: uppercase; letter-spacing: 0.15em;
+}
+.status-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--accent-dim); border: 1px solid rgba(0,255,136,0.2);
+  border-radius: 100px; padding: 4px 10px;
+  font-family: var(--mono); font-size: 10px; color: var(--accent);
+  letter-spacing: 0.05em;
+}
+.status-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent);
+  animation: pulse 2s infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+.google-config {
+  display: flex; flex-direction: column; gap: 8px; align-items: flex-end;
+}
+.config-row { display: flex; gap: 8px; align-items: center; }
+.config-label { font-family: var(--mono); font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
+.config-input {
+  background: var(--surface); border: 1px solid var(--border2);
+  border-radius: 6px; padding: 7px 12px;
+  color: var(--text); font-family: var(--mono); font-size: 11px;
+  outline: none; width: 220px;
+  transition: border-color 0.2s;
+}
+.config-input:focus { border-color: var(--accent); }
+.config-input::placeholder { color: var(--muted); }
+
+/* ── Input section ── */
+.input-section {
+  display: grid; grid-template-columns: 1fr 1fr 1fr 1fr auto;
+  gap: 12px; align-items: end;
+  margin-bottom: 24px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 20px;
+}
+
+.field { display: flex; flex-direction: column; gap: 8px; }
+.field label {
+  font-family: var(--mono); font-size: 10px;
+  color: var(--muted2); text-transform: uppercase; letter-spacing: 0.15em;
+}
+.field input, .field select {
+  background: var(--bg); border: 1px solid var(--border2);
+  border-radius: 8px; padding: 11px 14px;
+  color: var(--text); font-family: var(--body); font-size: 14px;
+  outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+}
+.field input:focus, .field select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(0,255,136,0.1);
+}
+.field input::placeholder { color: var(--muted); }
+.field select option { background: #0d0d18; }
+
+.btn-run {
+  background: var(--accent); color: #000;
+  border: none; border-radius: 8px;
+  padding: 12px 24px; white-space: nowrap;
+  font-family: var(--display); font-size: 20px; letter-spacing: 1px;
+  cursor: pointer; transition: all 0.2s;
+  align-self: end;
+}
+.btn-run:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,255,136,0.3); }
+.btn-run:active { transform: none; }
+.btn-run:disabled { opacity: 0.3; cursor: not-allowed; transform: none; box-shadow: none; }
+
+/* ── Log / terminal ── */
+.terminal {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 16px 20px;
+  margin-bottom: 20px;
+  font-family: var(--mono); font-size: 12px; line-height: 1.8;
+  color: var(--muted2); min-height: 64px;
+  display: none;
+}
+.terminal.visible { display: block; }
+.log-line { animation: fadeIn 0.2s ease; }
+.log-accent { color: var(--accent); }
+.log-warn { color: var(--warn); }
+.log-blue { color: var(--blue); }
+.log-dim { color: var(--muted); }
+@keyframes fadeIn { from{opacity:0;transform:translateY(2px)} to{opacity:1;transform:none} }
+
+/* ── Results table ── */
+.results-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border); }
+
+table {
+  width: 100%; border-collapse: collapse;
+  font-size: 13px;
+}
+thead tr {
+  background: #0d0d16;
+  border-bottom: 1px solid var(--border2);
+}
+thead th {
+  padding: 12px 16px; text-align: left;
+  font-family: var(--mono); font-size: 10px;
+  color: var(--muted2); text-transform: uppercase; letter-spacing: 0.12em;
+  white-space: nowrap; font-weight: 400;
+}
+tbody tr {
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+  animation: rowIn 0.3s ease both;
+}
+tbody tr:hover { background: rgba(0,255,136,0.03); }
+tbody tr:last-child { border-bottom: none; }
+@keyframes rowIn { from{opacity:0;transform:translateX(-4px)} to{opacity:1;transform:none} }
+
+td { padding: 12px 16px; vertical-align: middle; }
+
+.td-user { font-family: var(--mono); font-size: 12px; color: var(--accent); font-weight: 700; white-space: nowrap; }
+.td-link a { color: var(--blue); font-family: var(--mono); font-size: 11px; text-decoration: none; }
+.td-link a:hover { text-decoration: underline; }
+
+.badge {
+  display: inline-block; padding: 3px 9px; border-radius: 4px;
+  font-family: var(--mono); font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap;
+}
+.badge-fandom    { background: rgba(255,77,136,0.15); color: var(--pink); border: 1px solid rgba(255,77,136,0.25); }
+.badge-fanpage   { background: rgba(255,107,53,0.15); color: var(--warn); border: 1px solid rgba(255,107,53,0.25); }
+.badge-micro     { background: rgba(77,159,255,0.15); color: var(--blue); border: 1px solid rgba(77,159,255,0.25); }
+.badge-medio     { background: rgba(255,217,61,0.15); color: var(--yellow); border: 1px solid rgba(255,217,61,0.25); }
+.badge-ugc       { background: rgba(0,255,136,0.12); color: var(--accent); border: 1px solid rgba(0,255,136,0.2); }
+
+.prio-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-family: var(--mono); font-size: 11px; font-weight: 700;
+}
+.prio-alta  { color: var(--accent); }
+.prio-media { color: var(--yellow); }
+.prio-baja  { color: var(--muted2); }
+
+.td-razon { color: var(--muted2); font-size: 12px; max-width: 220px; line-height: 1.4; }
+
+/* Results header */
+.results-top {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 14px;
+}
+.results-count {
+  font-family: var(--mono); font-size: 12px; color: var(--muted2);
+}
+.results-count strong { color: var(--accent); }
+
+.btn-export {
+  background: transparent; border: 1px solid var(--border2);
+  border-radius: 6px; padding: 7px 14px;
+  color: var(--muted2); font-family: var(--mono); font-size: 11px;
+  cursor: pointer; transition: all 0.2s; letter-spacing: 0.05em;
+}
+.btn-export:hover { border-color: var(--accent); color: var(--accent); }
+
+/* Empty / loading states */
+.state-box {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 64px 24px; text-align: center;
+}
+.state-ascii {
+  font-family: var(--mono); font-size: 11px; color: var(--muted);
+  line-height: 1.4; margin-bottom: 20px; white-space: pre;
+}
+.state-title { font-family: var(--display); font-size: 28px; color: var(--muted2); letter-spacing: 2px; margin-bottom: 8px; }
+.state-sub { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+.error-bar {
+  background: rgba(255,107,53,0.08); border: 1px solid rgba(255,107,53,0.25);
+  border-radius: 8px; padding: 12px 16px; margin-bottom: 16px;
+  font-family: var(--mono); font-size: 12px; color: var(--warn);
+  display: none;
+}
+.error-bar.visible { display: block; }
+
+/* Footer */
+footer {
+  margin-top: 40px; padding-top: 20px;
+  border-top: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.footer-left { font-family: var(--mono); font-size: 10px; color: var(--muted); }
+.footer-right { font-family: var(--mono); font-size: 10px; color: var(--muted); }
+
+@media (max-width: 768px) {
+  .input-section { grid-template-columns: 1fr 1fr; }
+  .btn-run { grid-column: 1 / -1; }
+  .header { flex-direction: column; gap: 16px; }
+  .google-config { align-items: flex-start; }
+  .config-input { width: 100%; }
+  .config-row { flex-direction: column; align-items: flex-start; }
+  .logo { font-size: 36px; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-left">
+      <div class="logo">SEEKER</div>
+      <div class="header-meta">
+        <div class="header-sub">Influencer Sourcing System · v3.0</div>
+        <div class="status-pill"><span class="status-dot"></span>AI AGENT ONLINE</div>
+      </div>
+    </div>
+    <div class="google-config">
+      <div class="config-row">
+        <span class="config-label">SerpAPI Key</span>
+        <input class="config-input" type="password" id="apiKey" placeholder="Tu key de serpapi.com">
+      </div>
+      <div class="config-row" style="justify-content:flex-end">
+        <button id="clearBtn" onclick="clearCredentials()" style="background:transparent;border:1px solid #1a1a24;border-radius:6px;padding:5px 12px;color:#4a4a6a;font-family:var(--mono);font-size:10px;cursor:pointer;letter-spacing:0.05em">✕ borrar credenciales</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Inputs -->
+  <div class="input-section">
+    <div class="field">
+      <label>Artista / Figura</label>
+      <input type="text" id="artist" placeholder="Bad Bunny">
+    </div>
+    <div class="field">
+      <label>Venue</label>
+      <input type="text" id="venue" placeholder="Movistar Arena">
+    </div>
+    <div class="field">
+      <label>Ciudad</label>
+      <input type="text" id="city" placeholder="Buenos Aires">
+    </div>
+    <div class="field">
+      <label>País</label>
+      <select id="country">
+        <option value="Argentina">Argentina</option>
+        <option value="México">México</option>
+        <option value="Chile">Chile</option>
+        <option value="Colombia">Colombia</option>
+        <option value="Uruguay">Uruguay</option>
+        <option value="Perú">Perú</option>
+        <option value="Brasil">Brasil</option>
+        <option value="España">España</option>
+      </select>
+    </div>
+    <button class="btn-run" id="runBtn" onclick="runSourcing()">BUSCAR</button>
+  </div>
+
+  <!-- Error -->
+  <div class="error-bar" id="errorBar"></div>
+
+  <!-- Terminal log -->
+  <div class="terminal" id="terminal"></div>
+
+  <!-- Results -->
+  <div id="resultsArea">
+    <div class="state-box">
+      <div class="state-ascii">
+ ██████╗  ██████╗  ██████╗ 
+██╔════╝ ██╔═══██╗██╔════╝ 
+╚█████╗  ██║   ██║██║      
+ ╚═══██╗ ██║   ██║██║      
+██████╔╝ ╚██████╔╝╚██████╗ 
+╚═════╝   ╚═════╝  ╚═════╝ </div>
+      <div class="state-title">AGUARDANDO INPUT</div>
+      <div class="state-sub">Ingresá artista + venue + ciudad + país<br>y el agente ejecutará la búsqueda.</div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-left">SEEKER PARKING · INFLUENCER SOURCING SYSTEM</div>
+    <div class="footer-right" id="footerMeta">—</div>
+  </footer>
+
+</div>
+
+<script>
+// ─────────────────────────────────────────────────────────────
+// QUERY BANK — estilo PhantomBuster
+// ─────────────────────────────────────────────────────────────
+function buildQueries(artist, venue, city, country) {
+  return [
+    // Fandoms y fan clubs locales
+    `"${artist}" "fan" "${city}" site:instagram.com`,
+    `"${artist}" fanpage "${country}" site:instagram.com`,
+    `"${artist}" fan club "${city}" site:instagram.com`,
+    // Evento específico
+    `"${artist}" "${venue}" site:instagram.com`,
+    `"${artist}" concierto "${city}" 2025 site:instagram.com`,
+    // Micro influencers de entretenimiento local
+    `microinfluencer entretenimiento conciertos "${city}" site:instagram.com`,
+    `creador contenido shows música "${city}" site:instagram.com`,
+    // UGC + experiencias
+    `"${artist}" experiencia "${city}" reels site:instagram.com`,
+    `"voy al concierto" "${artist}" "${country}" site:instagram.com`,
+    // Medios y periodistas chicos
+    `agenda cultural shows "${city}" site:instagram.com`,
+    `prensa espectáculos "${city}" conciertos site:instagram.com`,
+    // Hashtag-style (búsqueda indirecta)
+    `"${artist.replace(/ /g,'')}fans" "${country}" site:instagram.com`,
+    `"${artist}" superfan "${country}" site:instagram.com`,
+  ];
+}
+
+// ─────────────────────────────────────────────────────────────
+// CLAUDE PROMPT
+// ─────────────────────────────────────────────────────────────
+function buildPrompt(artist, venue, city, country, rawResults) {
+  return `Sos un asistente experto en influencer sourcing para eventos masivos de música, teatro y deporte.
+
+Se te entrega una lista de resultados de búsqueda de Instagram relacionados con el siguiente evento:
+
+- Artista: ${artist}
+- Venue: ${venue}
+- Ciudad: ${city}
+- País: ${country}
+
+RESULTADOS CRUDOS (título + URL + snippet de Google):
+${rawResults}
+
+TU TAREA:
+1. Analizá cada resultado y determiná si es una cuenta relevante para outreach de marketing de eventos/parking.
+2. Priorizá: fandoms, fanpages, microinfluencers locales, creadores de contenido de conciertos, cuentas activas, personas hablando del evento.
+3. Ignorá: spam, cuentas inactivas, cuentas irrelevantes, cuentas sin conexión real al evento o artista.
+4. Clasificá cada cuenta como: fandom / fanpage / microinfluencer / medio / ugc
+5. Rango de seguidores objetivo: 3k a 500k. PERO el criterio principal NO es el número de seguidores sino el ENGAGEMENT y la ACTIVIDAD:
+   - Priorizá cuentas que publican frecuentemente sobre el artista o eventos similares
+   - Priorizá cuentas con comunidades activas (comentarios, respuestas, interacción)
+   - Priorizá cuentas que ya hablan del evento o del venue
+   - Una cuenta de 15k muy activa vale más que una de 300k inactiva
+   - Descartá cuentas que parezcan abandonadas o con baja interacción aunque tengan muchos seguidores
+6. Asigná prioridad: alta / media / baja según engagement inferido y relevancia al evento, no por cantidad de seguidores
+
+DEVOLVÉ ÚNICAMENTE un JSON array con hasta 30 objetos, sin texto extra, sin markdown, sin explicaciones. Solo el JSON puro:
+
+[
+  {
+    "username": "@handle_sin_arroba_no_gracias_con_arroba",
+    "link": "https://instagram.com/...",
+    "tipo": "fandom|fanpage|microinfluencer|medio|ugc",
+    "pais": "${country}",
+    "prioridad": "alta|media|baja",
+    "razon": "Por qué es relevante + señales de engagement o actividad observadas"
+  }
+]
+
+Si un resultado no es claramente una cuenta de Instagram individual/comercial relevante, no lo incluyas.
+Solo devolvé el JSON array. Nada más.`;
+}
+
+// ─────────────────────────────────────────────────────────────
+// TERMINAL LOG
+// ─────────────────────────────────────────────────────────────
+let terminal;
+function log(msg, cls = '') {
+  terminal.classList.add('visible');
+  const line = document.createElement('div');
+  line.className = 'log-line' + (cls ? ' ' + cls : '');
+  line.textContent = `[${timestamp()}] ${msg}`;
+  terminal.appendChild(line);
+  terminal.scrollTop = terminal.scrollHeight;
+}
+function timestamp() {
+  const n = new Date();
+  return `${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}:${String(n.getSeconds()).padStart(2,'0')}`;
+}
+function clearTerminal() {
+  terminal = document.getElementById('terminal');
+  terminal.innerHTML = '';
+  terminal.classList.remove('visible');
+}
+
+// ─────────────────────────────────────────────────────────────
+// MAIN
+// ─────────────────────────────────────────────────────────────
+async function runSourcing() {
+  const apiKey  = document.getElementById('apiKey').value.trim();
+  const artist  = document.getElementById('artist').value.trim();
+  const venue   = document.getElementById('venue').value.trim();
+  const city    = document.getElementById('city').value.trim();
+  const country = document.getElementById('country').value;
+
+  const errBar = document.getElementById('errorBar');
+  errBar.classList.remove('visible');
+
+  if (!artist || !city) {
+    errBar.textContent = '⚠ Ingresá al menos artista y ciudad para continuar.';
+    errBar.classList.add('visible');
+    return;
+  }
+
+  const btn = document.getElementById('runBtn');
+  btn.disabled = true; btn.textContent = '...';
+  clearTerminal();
+
+  log(`Iniciando sourcing: ${artist} · ${city} · ${country}`, 'log-accent');
+  log(`Modo: SerpAPI + Claude AI`, 'log-dim');
+
+  // ── SERPAPI SEARCH ──
+  const queries = buildQueries(artist, venue, city, country);
+  const rawItems = [];
+  const seenUrls = new Set();
+
+  if (apiKey) {
+    log(`Ejecutando ${queries.length} queries via SerpAPI...`, 'log-blue');
+
+    for (let i = 0; i < queries.length; i++) {
+      const q = queries[i];
+      log(`Query ${i+1}/${queries.length}: ${q}`, 'log-dim');
+      try {
+        const url = `https://serpapi.com/search.json?engine=google&q=${encodeURIComponent(q)}&num=10&api_key=${apiKey}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data.error) { log(`Error SerpAPI: ${data.error}`, 'log-warn'); break; }
+        if (data.organic_results) {
+          data.organic_results.forEach(item => {
+            if (!seenUrls.has(item.link)) {
+              seenUrls.add(item.link);
+              rawItems.push(`TÍTULO: ${item.title}\nURL: ${item.link}\nSNIPPET: ${item.snippet || ''}`);
+            }
+          });
+        }
+        await new Promise(r => setTimeout(r, 200));
+      } catch (e) { log(`Error de red en query ${i+1}: ${e.message}`, 'log-warn'); }
+    }
+    log(`SerpAPI: ${rawItems.length} resultados únicos encontrados`, 'log-accent');
+  } else {
+    log(`Sin API key → usando modo demo con datos simulados`, 'log-warn');
+    const demoItems = [
+      { title: `${artist} Fans Argentina`, link: `https://instagram.com/${artist.toLowerCase().replace(/ /g,'')}fansarg`, snippet: `Fan page oficial de ${artist} en Argentina. Conciertos, noticias y más. 12k seguidores.` },
+      { title: `${city} Eventos y Shows`, link: `https://instagram.com/eventos${city.toLowerCase().replace(/ /g,'')}`, snippet: `Agenda de shows y conciertos en ${city}. Microinfluencer de entretenimiento. 8.5k seguidores.` },
+      { title: `${artist} Latinoamérica`, link: `https://instagram.com/${artist.toLowerCase().replace(/ /g,'')}latam`, snippet: `Comunidad fandom de ${artist} en Latinoamérica. 34k seguidores.` },
+      { title: `Conciertos ${city}`, link: `https://instagram.com/conciertos${city.toLowerCase().replace(/ /g,'')}`, snippet: `Reviews y cobertura de conciertos en ${city}. UGC creator, 6k seguidores activos.` },
+      { title: `${artist} Fanclub`, link: `https://instagram.com/${artist.toLowerCase().replace(/ /g,'')}argentinafc`, snippet: `Fan club organizado de ${artist}. 22k seguidores, activos en stories.` },
+      { title: `Agenda Musical ${country}`, link: `https://instagram.com/agendamusical${country.toLowerCase().replace(/ /g,'')}`, snippet: `Medio digital de agenda musical en ${country}. 15k seguidores.` },
+      { title: `${artist} Superfans`, link: `https://instagram.com/${artist.toLowerCase().replace(/ /g,'')}superfans`, snippet: `Fanpage activa con contenido exclusivo. 9k seguidores.` },
+      { title: `Reseñas Conciertos ${city}`, link: `https://instagram.com/resenasconciertos${city.toLowerCase().replace(/ /g,'')}`, snippet: `Creator UGC de experiencias de conciertos. 4.2k seguidores.` },
+    ];
+    demoItems.forEach(item => {
+      rawItems.push(`TÍTULO: ${item.title}\nURL: ${item.link}\nSNIPPET: ${item.snippet}`);
+      seenUrls.add(item.link);
+    });
+    log(`Demo: ${rawItems.length} resultados simulados cargados`, 'log-warn');
+  }
+
+  if (rawItems.length === 0) {
+    log('Sin resultados para procesar.', 'log-warn');
+    btn.disabled = false; btn.textContent = 'BUSCAR';
+    errBar.textContent = '⚠ No se encontraron resultados. Verificá tu SerpAPI key o probá otros términos.';
+    errBar.classList.add('visible');
+    return;
+  }
+
+  // ── CLAUDE AI ──
+  log(`Enviando ${rawItems.length} resultados a Claude para análisis...`, 'log-blue');
+
+  const prompt = buildPrompt(artist, venue, city, country, rawItems.join('\n\n---\n\n'));
+
+  let accounts = [];
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await res.json();
+    const raw = data.content?.map(b => b.text || '').join('') || '';
+    log(`Claude respondió. Parseando resultados...`, 'log-accent');
+
+    // Parse JSON safely
+    const clean = raw.replace(/```json|```/g, '').trim();
+    const start = clean.indexOf('[');
+    const end = clean.lastIndexOf(']');
+    if (start !== -1 && end !== -1) {
+      accounts = JSON.parse(clean.slice(start, end + 1));
+    }
+  } catch (e) {
+    log(`Error en Claude: ${e.message}`, 'log-warn');
+  }
+
+  log(`Análisis completo: ${accounts.length} cuentas clasificadas`, 'log-accent');
+
+  btn.disabled = false; btn.textContent = 'BUSCAR';
+  renderTable(accounts, artist, city, country);
+}
+
+// ─────────────────────────────────────────────────────────────
+// RENDER TABLE
+// ─────────────────────────────────────────────────────────────
+function renderTable(accounts, artist, city, country) {
+  const area = document.getElementById('resultsArea');
+
+  if (!accounts || accounts.length === 0) {
+    area.innerHTML = `<div class="state-box"><div class="state-title">SIN RESULTADOS</div><div class="state-sub">Claude no encontró cuentas relevantes con los datos actuales.<br>Probá ajustar los términos o verificar las credenciales.</div></div>`;
+    return;
+  }
+
+  // Sort: alta → media → baja
+  const order = { alta: 0, media: 1, baja: 2 };
+  accounts.sort((a, b) => (order[a.prioridad] || 1) - (order[b.prioridad] || 1));
+
+  const allLinks = accounts.map(a => a.link).join('\n');
+  const ts = new Date().toLocaleTimeString('es-AR');
+
+  document.getElementById('footerMeta').textContent = `${accounts.length} cuentas · ${artist} · ${city} · ${ts}`;
+
+  area.innerHTML = `
+    <div class="results-top">
+      <div class="results-count"><strong>${accounts.length}</strong> cuentas encontradas · ${artist} · ${city}, ${country}</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn-export" onclick="exportCSV()">Exportar CSV</button>
+        <button class="btn-export" onclick="copyAllLinks(\`${allLinks.replace(/`/g,'\\`')}\`)">Copiar links</button>
+      </div>
+    </div>
+    <div class="results-wrap">
+      <table id="resultsTable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Username</th>
+            <th>Link</th>
+            <th>Tipo</th>
+            <th>País</th>
+            <th>Prioridad</th>
+            <th>Razón</th>
+          </tr>
+        </thead>
+        <tbody id="resultsBody"></tbody>
+      </table>
+    </div>`;
+
+  const body = document.getElementById('resultsBody');
+  window._tableData = accounts;
+
+  accounts.forEach((acc, i) => {
+    const tr = document.createElement('tr');
+    tr.style.animationDelay = `${i * 0.04}s`;
+
+    const tipoClass = {
+      fandom: 'badge-fandom', fanpage: 'badge-fanpage',
+      microinfluencer: 'badge-micro', medio: 'badge-medio', ugc: 'badge-ugc'
+    }[acc.tipo] || 'badge-micro';
+
+    const prioClass = { alta: 'prio-alta', media: 'prio-media', baja: 'prio-baja' }[acc.prioridad] || 'prio-media';
+    const prioIcon  = { alta: '▲', media: '●', baja: '▽' }[acc.prioridad] || '●';
+
+    const shortLink = acc.link?.replace(/https?:\/\/(www\.)?instagram\.com\//,'@') || acc.link;
+
+    tr.innerHTML = `
+      <td class="log-dim" style="font-family:var(--mono);font-size:11px">${String(i+1).padStart(2,'0')}</td>
+      <td class="td-user">${acc.username || '—'}</td>
+      <td class="td-link"><a href="${acc.link}" target="_blank">${shortLink}</a></td>
+      <td><span class="badge ${tipoClass}">${acc.tipo || '—'}</span></td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--muted2)">${acc.pais || country}</td>
+      <td><span class="prio-badge ${prioClass}">${prioIcon} ${acc.prioridad || '—'}</span></td>
+      <td class="td-razon">${acc.razon || '—'}</td>`;
+    body.appendChild(tr);
+  });
+}
+
+// ─────────────────────────────────────────────────────────────
+// EXPORT
+// ─────────────────────────────────────────────────────────────
+function exportCSV() {
+  const data = window._tableData;
+  if (!data || !data.length) return;
+  const header = 'Username,Link,Tipo,País,Prioridad,Razón\n';
+  const rows = data.map(a =>
+    [a.username, a.link, a.tipo, a.pais, a.prioridad, `"${(a.razon||'').replace(/"/g,"'")}"`].join(',')
+  ).join('\n');
+  const blob = new Blob([header + rows], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url; link.download = 'seeker-influencers.csv'; link.click();
+}
+
+function copyAllLinks(links) {
+  navigator.clipboard.writeText(links).then(() => {
+    const btn = event.target;
+    btn.textContent = 'Copiado ✓';
+    setTimeout(() => btn.textContent = 'Copiar links', 2000);
+  });
+}
+
+// ─────────────────────────────────────────────────────────────
+// PERSISTENCIA — guarda y carga API Key + cx automáticamente
+// ─────────────────────────────────────────────────────────────
+function saveCredentials() {
+  const apiKey = document.getElementById('apiKey').value.trim();
+  if (apiKey) localStorage.setItem('seeker_apikey', apiKey);
+}
+
+function loadCredentials() {
+  const apiKey = localStorage.getItem('seeker_apikey');
+  if (apiKey) document.getElementById('apiKey').value = apiKey;
+  if (apiKey) {
+    const pill = document.querySelector('.status-pill');
+    if (pill) pill.innerHTML = '<span class="status-dot"></span>API CONFIGURADA ✓';
+  }
+}
+
+function clearCredentials() {
+  localStorage.removeItem('seeker_apikey');
+  document.getElementById('apiKey').value = '';
+  const pill = document.querySelector('.status-pill');
+  if (pill) pill.innerHTML = '<span class="status-dot"></span>AI AGENT ONLINE';
+}
+
+// Auto-guardar cuando el usuario escribe
+document.getElementById('apiKey').addEventListener('change', saveCredentials);
+
+
+// Cargar al iniciar
+loadCredentials();
+</script>
+</body>
+</html>
